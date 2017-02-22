@@ -110,11 +110,12 @@ public class HBaseTableConnection {
   public void flushCommits() throws IOException {
     BufferedMutator bufMutator = connection.getBufferedMutator(this.tableName);
     for (ConcurrentLinkedQueue<Mutation> buffer : bPool) {
-      for (Mutation m: buffer) {
-        bufMutator.mutate(m);
-        bufMutator.flush();
+      while (!buffer.isEmpty()) {
+        Mutation m = buffer.poll();
+	bufMutator.mutate(m);
       }
     }
+    bufMutator.flush();
     bufMutator.close();
   }
 
